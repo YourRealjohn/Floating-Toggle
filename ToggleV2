@@ -1,0 +1,139 @@
+local Players = game:GetService("Players")
+local CollectionService = game:GetService("CollectionService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- Main Library Table
+local Library = {}
+Library.__index = Library
+
+-- Create ScreenGui once
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+CollectionService:AddTag(ScreenGui, "main")
+
+-- Drag function
+local function makeDraggable(frame)
+    local dragging = false
+    local dragInput, mousePos, framePos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            mousePos = input.Position
+            framePos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if dragging and dragInput then
+            local delta = dragInput.Position - mousePos
+            frame.Position = UDim2.new(
+                framePos.X.Scale,
+                framePos.X.Offset + delta.X,
+                framePos.Y.Scale,
+                framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Add Toggle Function
+function Library:AddToggle(data)
+    local Title = data.Name or "New Toggle"
+    local Default = data.Default or false
+    local Callback = data.Callback or function() end
+
+    -- Trigger Button
+    local Trigger = Instance.new("TextButton")
+    Trigger.Name = "Trigger"
+    Trigger.Parent = ScreenGui
+    Trigger.Size = UDim2.new(0, 200, 0, 40)
+    Trigger.Position = data.Position or UDim2.new(0, 350, 0, 150)
+    Trigger.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Trigger.BorderSizePixel = 0
+    Trigger.Text = ""
+    Trigger.TextSize = 15
+    Trigger.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Trigger.TextXAlignment = Enum.TextXAlignment.Left
+    Trigger.TextWrapped = true
+
+    local TriggerCorner = Instance.new("UICorner")
+    TriggerCorner.CornerRadius = UDim.new(0, 4)
+    TriggerCorner.Parent = Trigger
+
+    local TriggerStroke = Instance.new("UIStroke")
+    TriggerStroke.Thickness = 2
+    TriggerStroke.Color = Color3.fromRGB(75, 75, 75)
+    TriggerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    TriggerStroke.Parent = Trigger
+
+    -- Toggle Frame (indicator)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = "ToggleFrame"
+    ToggleFrame.Parent = Trigger
+    ToggleFrame.Size = UDim2.new(0, 30, 0, 32)
+    ToggleFrame.Position = UDim2.new(0, 162, 0, 4)
+    ToggleFrame.BackgroundColor3 = Default and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(150, 150, 150)
+    ToggleFrame.BorderSizePixel = 0
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.Parent = ToggleFrame
+
+    local ToggleStroke = Instance.new("UIStroke")
+    ToggleStroke.Thickness = 2
+    ToggleStroke.Color = Color3.fromRGB(100, 100, 100)
+    ToggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    ToggleStroke.Parent = ToggleFrame
+
+    -- Label
+    local NameLabel = Instance.new("TextLabel")
+    NameLabel.Name = "Name"
+    NameLabel.Parent = Trigger
+    NameLabel.Size = UDim2.new(0, 154, 0, 32)
+    NameLabel.Position = UDim2.new(0, 4, 0, 4)
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Text = Title
+    NameLabel.TextSize = 16
+    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NameLabel.TextWrapped = true
+
+    -- State
+    local enabled = Default
+    Trigger.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        ToggleFrame.BackgroundColor3 = enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(150, 150, 150)
+        Callback(enabled)
+    end)
+
+    -- Make draggable
+    makeDraggable(Trigger)
+
+    return {
+        Object = Trigger,
+        Set = function(state)
+            enabled = state
+            ToggleFrame.BackgroundColor3 = state and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(150, 150, 150)
+            Callback(state)
+        end,
+        Get = function()
+            return enabled
+        end
+    }
+end
+
+return Library
