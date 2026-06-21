@@ -1,0 +1,728 @@
+-- Tabs 
+-- Main - Hitbox 
+-- Target - Auto aim
+-- Visual - ESP 
+-- Misc - Rejoin 
+
+local UI = 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/YourRealjohn/SSSMOD/refs/heads/main/YourRealjohn/BloodTestLastDance"))()
+
+
+
+MakeWindow({
+  Hub = {
+    Title = "Mythixz Hub  |  <font color='rgb(88, 101, 242)'>PvP Enchancement</font>  <font size='15' color='rgb(100,100,100)'>V1.12</font>",
+    Animation = "By : Chris"
+  },
+  Key = {
+    KeySystem = false,
+    Title = "Key System",
+    Description = "The key is UnnamedHub123 btw",
+    KeyLink = "UnnamedHub123",
+    Keys = {"UnnamedHub123"},
+    Notifi = {
+      Notifications = false,
+      CorrectKey = "Running the Script...",
+      Incorrectkey = "The key is incorrect",
+      CopyKeyLink = "Copied to Clipboard"
+    }
+  }
+})
+
+-- First variable 
+MinimizeButton({
+  Image = "rbxassetid://8622542227",
+  Size = {43, 43},
+  Color = Color3.fromRGB(10, 10, 10),
+  Corner = true,
+  Stroke = true,
+  StrokeColor = Color3.fromRGB(20, 10, 10)
+})
+
+
+-- rbxassetid://106585954087372 
+
+-- rbxassetid://12334310432
+
+
+
+
+MakeSoundNotification({
+  Title = "Notification",
+  Text = "Script loaded successfully",
+  Time = 7
+})
+
+-- Tabs variable 
+local Tab0 = MakeTab({
+  Name = "Info",
+  Icon = "rbxassetid://10723415903"  -- ⚔️ sword icon
+})
+
+local Tab1 = MakeTab({
+  Name = "Main",
+  Icon = "rbxassetid://10723407389"  -- ⚔️ sword icon
+})
+
+local Tab2 = MakeTab({
+  Name = "Hitbox",
+  Icon = "rbxassetid://10747373176"  -- ⚔️ sword icon
+})
+
+local Tab3 = MakeTab({
+  Name = "Visual",
+  Icon = "rbxassetid://10723346959"  -- ⚔️ sword icon
+})
+
+local Tab4 = MakeTab({
+  Name = "Misc",
+  Icon = "rbxassetid://10734950309"  -- ⚔️ sword icon
+})
+
+
+
+
+-- Paragraphs for each Tab
+local Paragraph1 = AddParagraph(Tab1, {"Welcome to Mythixz Hub", "Welcome! This is the main section of Mythixz Hub. Here you’ll find aimbot controls and customization. Enjoy tweaking your setup!"})
+local Paragraph1 = AddParagraph(Tab1, {"Main Features", "This tab contains the main aimbot and core PvP enhancements."})
+local Paragraph2 = AddParagraph(Tab2, {"Hitbox Settings", "Configure hitbox expanders or hitbox-related options here."})
+local Paragraph3 = AddParagraph(Tab3, {"Visual Settings", "Visual options like ESP, FOV circle color, and enhancements are here."})
+local Paragraph4 = AddParagraph(Tab4, {"Miscellaneous", "Other tools, extra features, and experimental options go here."})
+local Paragraph0 = AddParagraph(Tab0, {"Coming Soon", "This tab will receive new updates and features in the future."})
+local Paragraph5 = AddParagraph(Tab5, {"Coming Soon", "This tab will also be used for future expansions."})
+
+-- Variables
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+
+local aimbotEnabled = false
+local wallcheckEnabled = false
+local fovRadius = 100
+local aimPart = "Head"
+
+-- FOV Circle
+local circle = Drawing.new("Circle")
+circle.Color = Color3.fromRGB(255, 255, 255)
+circle.Thickness = 1
+circle.Filled = false
+circle.Radius = fovRadius
+circle.Visible = false
+circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+-- Wallcheck Function
+local function isVisible(part)
+    local origin = camera.CFrame.Position
+    local direction = (part.Position - origin).Unit * 1000
+    local rayParams = RaycastParams.new()
+    rayParams.FilterDescendantsInstances = {player.Character}
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.IgnoreWater = true
+
+    local result = workspace:Raycast(origin, direction, rayParams)
+    return result and result.Instance and result.Instance:IsDescendantOf(part.Parent)
+end
+
+-- Get Closest Player
+local function getClosestPlayer()
+    local closest = nil
+    local shortestDistance = fovRadius
+
+    for _, p in pairs(players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild(aimPart) then
+            local part = p.Character[aimPart]
+            local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+            if onScreen then
+                if (not wallcheckEnabled) or (wallcheckEnabled and isVisible(part)) then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
+                    if dist < shortestDistance then
+                        shortestDistance = dist
+                        closest = p
+                    end
+                end
+            end
+        end
+    end
+
+    return closest
+end
+
+-- Aimbot Toggle
+AddToggle(Tab1, {
+  Name = "Enable Aimbot",
+  Default = false,
+  Callback = function(state)
+        aimbotEnabled = state
+        circle.Visible = state
+  end
+})
+
+-- Wallcheck Toggle
+AddToggle(Tab1, {
+  Name = "Enable WallCheck",
+  Default = true,
+  Callback = function(state)
+        wallcheckEnabled = state
+  end
+})
+
+-- FOV Radius Slider
+AddSlider(Tab1, {
+  Name = "FOV Radius",
+  MinValue = 1,
+  MaxValue = 400,
+  Default = 75,
+  Increase = 1,
+  Callback = function(Value)
+        fovRadius = Value
+        circle.Radius = Value
+  end
+})
+
+local section = AddSection(Tab1, {"I'll recommend you to use 75 In Fov Radius size"})
+
+-- Fov Radius 
+AddTextBox(Tab1, {
+  Name = "Fov Radius",
+  Default = "75",
+  PlaceholderText = "Enter A Number",
+  ClearText = false,
+  Callback = function(Value)
+      local number = tonumber(Value)
+      if number then
+          fovRadius = number
+          circle.Radius = number
+      end
+  end
+})
+
+-- AimPart Dropdown
+AddDropdown(Tab1, {
+  Name = "Aim Part",
+  Options = {"Head", "HumanoidRootPart", "Left Arm", "Right Arm", "Torso", "Left Leg", "Right Leg"},
+  Default = "Head",
+  Callback = function(Value)
+        aimPart = Value
+  end
+})
+
+-- FOV Color Picker
+AddColorPicker(Tab1, {
+    Name = "Fov Circle color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(Value)
+        circle.Color = Value
+    end
+})
+
+-- Aimbot Logic
+runService.RenderStepped:Connect(function()
+    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+    if aimbotEnabled then
+        local target = getClosestPlayer()
+        if target and target.Character and target.Character:FindFirstChild(aimPart) then
+            local pos = target.Character[aimPart].Position
+            camera.CFrame = CFrame.new(camera.CFrame.Position, pos)
+        end
+    end
+end)
+
+
+
+
+
+
+
+-- ESP Variable 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local COREGUI = game:GetService("CoreGui")
+
+local ESPenabled = false
+local espTransparency = 0.5
+local espConnections = {}
+
+local function getRoot(char)
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
+local function round(num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+local function ESP(plr)
+    if not ESPenabled then return end  
+
+    local function setupESP()
+        -- remove old ESP
+        local old = COREGUI:FindFirstChild(plr.Name.."_ESP")
+        if old then old:Destroy() end  
+
+        if plr.Character and plr.Name ~= Players.LocalPlayer.Name then
+            local ESPholder = Instance.new("Folder")
+            ESPholder.Name = plr.Name.."_ESP"
+            ESPholder.Parent = COREGUI
+
+            repeat task.wait() until getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
+
+            for _, n in pairs(plr.Character:GetChildren()) do
+                if n:IsA("BasePart") then
+                    local a = Instance.new("BoxHandleAdornment")
+                    a.Name = plr.Name
+                    a.Parent = ESPholder
+                    a.Adornee = n
+                    a.AlwaysOnTop = true
+                    a.ZIndex = 10
+                    a.Size = n.Size
+                    a.Transparency = espTransparency
+                    a.Color3 = plr.TeamColor.Color
+                end
+            end
+
+            if plr.Character:FindFirstChild("Head") then
+                local BillboardGui = Instance.new("BillboardGui")
+                local TextLabel = Instance.new("TextLabel")
+
+                BillboardGui.Adornee = plr.Character.Head
+                BillboardGui.Name = plr.Name
+                BillboardGui.Parent = ESPholder
+                BillboardGui.Size = UDim2.new(0, 100, 0, 150)
+                BillboardGui.StudsOffset = Vector3.new(0, 1, 0)
+                BillboardGui.AlwaysOnTop = true
+
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundTransparency = 1
+                TextLabel.Size = UDim2.new(0, 100, 0, 100)
+                TextLabel.Font = Enum.Font.SourceSansSemibold
+                TextLabel.TextSize = 20
+                TextLabel.TextColor3 = Color3.new(1, 1, 1)
+                TextLabel.TextStrokeTransparency = 0
+                TextLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+
+                local conn
+                conn = RunService.RenderStepped:Connect(function()
+                    if not ESPenabled or not COREGUI:FindFirstChild(plr.Name.."_ESP") then
+                        if conn then conn:Disconnect() end
+                        return
+                    end
+                    if plr.Character and getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid") then
+                        local pos = math.floor((getRoot(Players.LocalPlayer.Character).Position - getRoot(plr.Character).Position).Magnitude)
+                        TextLabel.Text = "Name: "..plr.Name.." | Health: "..round(plr.Character:FindFirstChildOfClass("Humanoid").Health, 1).." | Studs: "..pos
+                    end
+                end)
+                espConnections[plr] = conn
+            end
+
+            -- remove ESP when dead
+            local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Died:Connect(function()
+                    local espFolder = COREGUI:FindFirstChild(plr.Name.."_ESP")
+                    if espFolder then espFolder:Destroy() end
+                    if espConnections[plr] then
+                        espConnections[plr]:Disconnect()
+                        espConnections[plr] = nil
+                    end
+                end)
+            end
+        end
+    end
+
+    -- run once now
+    setupESP()
+
+    -- run again every respawn
+    plr.CharacterAdded:Connect(function()
+        if ESPenabled then
+            setupESP()
+        end
+    end)
+end
+
+local function toggleESP(state)
+    ESPenabled = state
+
+    if ESPenabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= Players.LocalPlayer then
+                ESP(plr)
+            end
+        end
+    else
+        -- Remove all ESP elements and disconnect loops
+        for _, v in pairs(COREGUI:GetChildren()) do
+            if v.Name:find("_ESP") then
+                v:Destroy()
+            end
+        end
+        for _, conn in pairs(espConnections) do
+            if conn then
+                conn:Disconnect()
+            end
+        end
+        espConnections = {}
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    if ESPenabled then
+        ESP(plr)
+    end
+end)
+
+AddToggle(Tab3, {
+    Name = "ESP PLAYER ",
+    Default = false,
+    Callback = function(state)
+        toggleESP(state)
+    end
+})
+
+
+
+-- Wally west Variable 
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
+
+-- CONFIGURATION
+local HOLD_KEY = Enum.KeyCode.Q
+local NORMAL_SPEED = 16
+local BOOSTED_SPEED = 120
+local NORMAL_JUMP_POWER = 50
+local BOOSTED_JUMP_POWER = 110
+
+-- STATE
+local isActive = false
+local character, humanoid
+local allTrails = {}
+local auraEmitters = {}
+local MobileToggle -- declare upfront so we can sync it later
+
+-- POST FX
+local blur = Instance.new("BlurEffect", Lighting)
+blur.Size = 0
+blur.Enabled = false
+blur.Name = "SonicBlur"
+
+local colorCorrection = Instance.new("ColorCorrectionEffect", Lighting)
+colorCorrection.Enabled = false
+colorCorrection.Name = "SonicColorFX"
+
+-- SOUNDS
+local soundActivate = Instance.new("Sound", Workspace)
+soundActivate.SoundId = "rbxassetid://139909368044571"
+soundActivate.Volume = 1
+
+local soundLoop = Instance.new("Sound", Workspace)
+soundLoop.SoundId = "rbxassetid://127963242920916"
+soundLoop.Volume = 0
+soundLoop.Looped = true
+soundLoop.PlaybackSpeed = 0.15
+
+-- FX SETTINGS
+local TWEEN_INFO = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+local EFFECT_COLORS = {
+	Active = {
+		Contrast = 0.5,
+		Saturation = 0.6,
+		TintColor = Color3.fromRGB(87, 216, 255)
+	},
+	Inactive = {
+		Contrast = 0,
+		Saturation = 0,
+		TintColor = Color3.new(1, 1, 1)
+	}
+}
+
+-- UTILITY FUNCTIONS
+local function fadeSound(sound, targetVolume, duration)
+	local startVolume = sound.Volume
+	local startTime = tick()
+	local id = "Fade_" .. math.random()
+	RunService:BindToRenderStep(id, 200, function()
+		local alpha = math.clamp((tick() - startTime) / duration, 0, 1)
+		sound.Volume = startVolume + (targetVolume - startVolume) * alpha
+		if alpha >= 1 then
+			RunService:UnbindFromRenderStep(id)
+			if targetVolume == 0 then sound:Stop() end
+		end
+	end)
+end
+
+local function flashScreen()
+	local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	gui.IgnoreGuiInset = true
+	gui.ResetOnSpawn = false
+
+	local frame = Instance.new("Frame", gui)
+	frame.Size = UDim2.new(1, 0, 1, 0)
+	frame.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+	frame.BackgroundTransparency = 1
+	frame.ZIndex = 999
+
+	TweenService:Create(frame, TweenInfo.new(0.05), {BackgroundTransparency = 0.2}):Play()
+	task.wait(0.05)
+	TweenService:Create(frame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	task.delay(0.35, function()
+		gui:Destroy()
+	end)
+end
+
+local function cameraShake(duration, magnitude)
+	local start = tick()
+	local conn
+	conn = RunService.RenderStepped:Connect(function()
+		if tick() - start > duration then conn:Disconnect() return end
+		local offset = Vector3.new(
+			(math.random() - 0.5) * magnitude,
+			(math.random() - 0.5) * magnitude,
+			0
+		)
+		camera.CFrame = camera.CFrame * CFrame.new(offset)
+	end)
+end
+
+local function setVisuals(enable)
+	colorCorrection.Enabled = true
+	blur.Enabled = true
+
+	local target = enable and EFFECT_COLORS.Active or EFFECT_COLORS.Inactive
+	local blurSize = enable and 6 or 0
+
+	TweenService:Create(blur, TWEEN_INFO, {Size = blurSize}):Play()
+	TweenService:Create(colorCorrection, TWEEN_INFO, {
+		Contrast = target.Contrast,
+		Saturation = target.Saturation,
+		TintColor = target.TintColor
+	}):Play()
+
+	if not enable then
+		task.delay(0.5, function()
+			if not isActive then
+				colorCorrection.Enabled = false
+				blur.Enabled = false
+			end
+		end)
+	end
+end
+
+-- TRAILS
+local function createTrail(part, offset0, offset1, width)
+	local a0 = Instance.new("Attachment", part)
+	local a1 = Instance.new("Attachment", part)
+	a0.Position = offset0
+	a1.Position = offset1
+
+	local trail = Instance.new("Trail", part)
+	trail.Attachment0 = a0
+	trail.Attachment1 = a1
+	trail.Lifetime = 0.3
+	trail.LightEmission = 1
+	trail.WidthScale = NumberSequence.new(width)
+	trail.Color = ColorSequence.new(Color3.fromRGB(0, 220, 255), Color3.fromRGB(255, 255, 255))
+	trail.Transparency = NumberSequence.new{
+		NumberSequenceKeypoint.new(0, 0.1),
+		NumberSequenceKeypoint.new(1, 1)
+	}
+
+	table.insert(allTrails, trail)
+end
+
+local function createAllTrails()
+	local parts = {
+		"HumanoidRootPart",
+		"LeftHand", "RightHand", "LeftFoot", "RightFoot",
+		"Left Arm", "Right Arm", "Left Leg", "Right Leg",
+		"Torso", "Head"
+	}
+
+	local offsetPairs = {
+		{Vector3.new(0, 0.3, 0), Vector3.new(0, -0.3, 0)},
+		{Vector3.new(0.1, 0.4, 0), Vector3.new(0.1, -0.4, 0)},
+		{Vector3.new(-0.1, 0.4, 0), Vector3.new(-0.1, -0.4, 0)},
+		{Vector3.new(0.15, 0.2, 0.1), Vector3.new(0.15, -0.2, 0.1)},
+		{Vector3.new(-0.15, 0.2, 0.1), Vector3.new(-0.15, -0.2, 0.1)},
+		{Vector3.new(0.1, 0, 0.15), Vector3.new(0.1, 0, -0.15)},
+		{Vector3.new(-0.1, 0, 0.15), Vector3.new(-0.1, 0, -0.15)},
+	}
+
+	for _, name in ipairs(parts) do
+		local part = character:FindFirstChild(name)
+		if part then
+			for i, offsets in ipairs(offsetPairs) do
+				local width = 0.05 + (i * 0.02)
+				createTrail(part, offsets[1], offsets[2], width)
+			end
+		end
+	end
+end
+
+local function destroyAllTrails()
+	for _, trail in ipairs(allTrails) do
+		if trail and trail.Parent then trail:Destroy() end
+	end
+	table.clear(allTrails)
+end
+
+-- ELECTRIC AURA
+local function createAuraEmitter(part)
+	local attachment = Instance.new("Attachment", part)
+	local particle = Instance.new("ParticleEmitter", attachment)
+
+	particle.Texture = "rbxassetid://3442350629"
+	particle.Rate = 20
+	particle.Lifetime = NumberRange.new(0.2, 0.4)
+	particle.Speed = NumberRange.new(3, 6)
+	particle.VelocitySpread = 360
+	particle.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.2), NumberSequenceKeypoint.new(1, 0.4)})
+	particle.LightEmission = 1
+	particle.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.15), NumberSequenceKeypoint.new(1, 1)})
+	particle.Color = ColorSequence.new(Color3.fromRGB(0, 255, 255))
+	particle.ZOffset = 1
+
+	table.insert(auraEmitters, attachment)
+end
+
+local function createElectricAura()
+	local parts = {
+		"Head",
+		"HumanoidRootPart",
+		"LeftHand", "RightHand", "LeftFoot", "RightFoot",
+		"Left Arm", "Right Arm", "Left Leg", "Right Leg"
+	}
+	for _, name in ipairs(parts) do
+		local part = character:FindFirstChild(name)
+		if part then createAuraEmitter(part) end
+	end
+end
+
+local function destroyElectricAura()
+	for _, emitter in ipairs(auraEmitters) do
+		if emitter and emitter.Parent then emitter:Destroy() end
+	end
+	table.clear(auraEmitters)
+end
+
+-- ACTIVATION
+local function activateSonicMode()
+	if isActive or not humanoid then return end
+	isActive = true
+
+	humanoid.WalkSpeed = BOOSTED_SPEED
+	humanoid.JumpPower = BOOSTED_JUMP_POWER
+	camera.FieldOfView = 100
+
+	setVisuals(true)
+	soundActivate:Play()
+	soundLoop.Volume = 0
+	soundLoop:Play()
+	fadeSound(soundLoop, 1, 0.4)
+
+	flashScreen()
+	cameraShake(0.4, 0.3)
+	createAllTrails()
+	createElectricAura()
+
+	if MobileToggle then
+		MobileToggle:Set(true) -- sync mobile toggle
+	end
+end
+
+local function deactivateSonicMode()
+	if not isActive then return end
+	isActive = false
+
+	humanoid.WalkSpeed = NORMAL_SPEED
+	humanoid.JumpPower = NORMAL_JUMP_POWER
+	camera.FieldOfView = 90
+
+	setVisuals(false)
+	fadeSound(soundLoop, 0, 0.5)
+
+	flashScreen()
+	cameraShake(0.3, 0.2)
+	destroyAllTrails()
+	destroyElectricAura()
+
+	if MobileToggle then
+		MobileToggle:Set(false) -- sync mobile toggle
+	end
+end
+
+-- CHARACTER
+local function bindCharacter(char)
+	character = char
+	humanoid = char:WaitForChild("Humanoid")
+end
+
+player.CharacterAdded:Connect(bindCharacter)
+if player.Character then bindCharacter(player.Character) end
+
+-- INPUT (Toggle with Q key)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == HOLD_KEY then
+		if isActive then
+			deactivateSonicMode()
+		else
+			activateSonicMode()
+		end
+	end
+end)
+
+-- MOBILE TOGGLE (UI Button)
+MobileToggle = AddMobileToggle({
+	Name = "Sonic Mode",
+	Visible = true,
+	Callback = function(state)
+		if state then
+			activateSonicMode()
+		else
+			deactivateSonicMode()
+		end
+	end
+})
+
+AddToggle(Tab4, {
+    Name = "Mini Sonic mode",
+    Default = false,
+    Callback = function(Value)
+        MobileToggle.Visible = Value
+    end
+})
+
+AddButton(Tab4, {
+	Name = "Teleport to Troll Area",
+	Callback = function()
+		PlayClick()
+	end
+})
+
+
+
+
+local MobileToggle = AddMobileToggle({
+  Name = "Auto aim",
+  Visible = false,
+  Callback = function(state)
+        aimbotEnabled = state
+        circle.Visible = state
+  end
+})
+
+AddToggle(Tab4, {
+    Name = "Mini Auto aim show & hide",
+    Default = false,
+    Callback = function(Value)
+        MobileToggle.Visible = Value
+    end
+})
